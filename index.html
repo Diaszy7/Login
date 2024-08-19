@@ -1,13 +1,64 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head> 
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta   http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Login e Registro</title>
     <link rel="stylesheet" href="Styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-       
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        function handleCredentialResponse(response) {
+            const token = response.credential;
+            const decodedToken = parseJwt(token);
+            console.log(decodedToken);
+
+            // Enviar dados para o servidor
+            fetch('config.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: decodedToken.name,
+                    email: decodedToken.email,
+                    googleId: decodedToken.sub
+                })
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log('Success:', data);
+                alert(data);  // Exibe a resposta do servidor em um alerta
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
+        function parseJwt(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+
+            return JSON.parse(jsonPayload);
+        }
+
+        function initializeGoogleSignIn() {
+            window.google.accounts.id.initialize({
+                client_id: '816885631404-a917btmgfl3hl5ha2rmlvaqe5glcduj9.apps.googleusercontent.com',
+                callback: handleCredentialResponse
+            });
+            window.google.accounts.id.renderButton(
+                document.getElementById('google-signin-button'),
+                { theme: "outline", size: "large" }
+            );
+        }
+
+        window.onload = initializeGoogleSignIn;
+    </script>
 </head>
 <body>
     <div class="container">
@@ -22,91 +73,31 @@
                 <h2 class="title title-second">Criar conta</h2>
                 <div class="social-media">
                     <ul class="list-social-media">
-                        <a class="link-social-media" href="#">
-                            <li class="item-social-media">
-                                <i class="fab fa-facebook-f"></i>        
-                            </li>
-                        </a>
-                        <a class="link-social-media" href="">
+                        <a class="link-social-media" href="#" id="google-signin-button">
                             <li class="item-social-media">
                                 <i class="fab fa-google-plus-g"></i>
                             </li>
                         </a>
-                        <a class="link-social-media" href="#">
-                            <li class="item-social-media">
-                                <i class="fab fa-linkedin-in"></i>
-                            </li>
-                        </a>
                     </ul>
-                </div><!-- social media -->
+                </div>
                 <p class="description description-second">ou use seu email para registrar:</p>
                 <form class="form" action="config.php" method="POST">
                     <label class="label-input">
                         <i class="far fa-user icon-modify"></i>
                         <input type="text" name="nome" placeholder="Nome" required>
                     </label>
-                    
                     <label class="label-input">
                         <i class="far fa-envelope icon-modify"></i>
                         <input type="email" name="email" placeholder="Email" required>
                     </label>
-                    
                     <label class="label-input">
                         <i class="fas fa-lock icon-modify"></i>
                         <input type="password" name="senha" placeholder="Senha" required>
                     </label>
-                    
                     <button class="btn btn-second" type="submit" name="register">sign up</button>        
                 </form>
-            </div><!-- second column -->
-        </div><!-- first content -->
-        <div class="content second-content">
-            <div class="first-column">
-                <h2 class="title title-primary">Olá, amigo!</h2>
-                <p class="description description-primary">Insira seus dados pessoais</p>
-                <p class="description description-primary">e comece a jornada conosco</p>
-                <button id="signup" class="btn btn-primary">sign up</button>
             </div>
-            <div class="second-column">
-                <h2 class="title title-second">Entrar como desenvolvedor</h2>
-                <div class="social-media">
-                    <ul class="list-social-media">
-                        <a class="link-social-media" href="#">
-                            <li class="item-social-media">
-                                <i class="fab fa-facebook-f"></i>
-                            </li>
-                        </a>
-                        <a class="link-social-media" href="#">
-                            <li class="item-social-media">
-                                <i class="fab fa-google-plus-g"></i>
-                            </li>
-                        </a>
-                        <a class="link-social-media" href="#">
-                            <li class="item-social-media">
-                                <i class="fab fa-linkedin-in"></i>
-                            </li>
-                        </a>
-                    </ul>
-                </div><!-- social media -->
-                <p class="description description-second">ou use sua conta de email:</p>
-                <form class="form" action="config.php" method="POST">
-                    <label class="label-input">
-                        <i class="far fa-envelope icon-modify"></i>
-                        <input type="email" name="email" placeholder="Email" required>
-                    </label>
-                
-                    <label class="label-input">
-                        <i class="fas fa-lock icon-modify"></i>
-                        <input type="password" name="senha" placeholder="Senha" required>
-                    </label>
-                
-                    <a class="password" href="#">Esqueceu sua senha?</a>
-                    <button class="btn btn-second" type="submit" name="login">sign in</button>
-                </form>
-            </div><!-- second column -->
-        </div><!-- second-content -->
-    </div><!-- container -->
-
-    <script src="app.js"></script>
+        </div>
+    </div>
 </body>
 </html>
